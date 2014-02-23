@@ -15,14 +15,14 @@ If you want to clone the repo always use the files under [dist](https://github.c
 
 #### Install via Bower ####
 
-```
-bower install jquery.countdown
+```sh
+bower install jquery-countdown
 ```
 
 Add a `script` to your html:
 
 ```html
-<script src="/bower_components/jquery.countdown/dist/jquery.countdown.js"></script>
+<script src="/bower_components/jquery-countdown/jquery.countdown.js"></script>
 ```
 
 Getting started
@@ -98,7 +98,7 @@ grunt build # Generate the release files (dev, min and zip)
 grunt       # Watch for updates than test and build
 ```
 
-This plugin is tested with [QUnit](http://qunitjs.com/), under jQuery 1.7.2 up to 2.0.3, Bootstrap 3.0 and RequireJS 2.1.9. 
+This plugin is tested with [QUnit](http://qunitjs.com/), under jQuery 1.7.2 up to 2.0.3, Bootstrap 3.0 and RequireJS 2.1.9.
 
 The functional tests were made against:
 
