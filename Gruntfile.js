@@ -55,7 +55,10 @@ module.exports = function(grunt) {
               ['<%= dirs.src %>/**/*.js']
         },
         options: {
-          beautify: true,
+          beautify: {
+            indent_level: 2,
+            beautify: true
+          },
           compress: false,
           mangle: false,
           preserveComments: false
