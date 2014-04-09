@@ -111,14 +111,14 @@
         }
     }
     // The Final Countdown
-    var Countdown = function(el, finalDate, callback) {
+    var Countdown = function(el, finalDate, upFinalDate, callback) {
         this.el             = el;
         this.$el            = $(el);
         this.interval       = null;
         this.offset         = {};
         // Set the final date
         this.setFinalDate(finalDate);
-        // Register this instance
+        this.setUpFinalDate(upFinalDate);
         this.instanceNumber = instances.length;
         instances.push(this);
         // Save the reference
@@ -128,12 +128,13 @@
             this.$el.on('update.countdown', callback);
             this.$el.on('stoped.countdown', callback);
             this.$el.on('finish.countdown', callback);
+            this.$el.on('upfinish.countdown', callback);
         }
         this.start();
     };
     $.extend(Countdown.prototype, {
         start: function() {
-            if(this.interval !== null) {
+            if (this.interval !== null) {
                 throw new Error("Countdown is already running!");
             }
             var self = this;
@@ -141,6 +142,17 @@
             this.interval = setInterval(function() {
                 self.update.call(self);
             }, PRECISION);
+        },
+        upStart: function() {
+            if (this.interval !== null) {
+                throw new Error("Countdown is already running!");
+            }
+            var self = this;
+            this.totalSecsLeft = 0;
+            this.upUpdate();
+            this.interval = setInterval(function() {
+                self.upUpdate.call(self);
+            }, 1000);
         },
         stop: function() {
             clearInterval(this.interval);
@@ -156,51 +168,79 @@
         remove: function() {
             this.stop();
             delete instances[this.instanceNumber];
-            // Reset the countdown instance under data attr (Thanks to @assiotis)
-            delete this.$el.data().countdownInstance;
         },
         setFinalDate: function(value) {
-            this.finalDate = parseDateString(value); // Cast the given date
+            this.finalDate = parseDateString(value);
         },
-        update: function() {
-            // Stop if dom is not in the html (Thanks to @dleavitt)
-            if(this.$el.closest('html').length === 0) {
+        setUpFinalDate: function(value) {
+            this.upFinalDate = parseDateString(value);
+        },
+        upUpdate: function () {
+            if (this.$el.closest("html").length === 0) {
                 this.remove();
                 return;
             }
-            // Calculate the remaining time
-            this.totalSecsLeft = this.finalDate.valueOf() - 
-                new Date().valueOf(); // In miliseconds
-            this.totalSecsLeft = Math.ceil(this.totalSecsLeft / 1000);
-            this.totalSecsLeft = this.totalSecsLeft < 0 ? 
-                0 : this.totalSecsLeft;
-            // Calculate the offsets
+            var startTime = new Date().valueOf() - this.finalDate.valueOf();
+            this.totalSecsLeft = Math.ceil(startTime / 1e3);
             this.offset = {
-                seconds     : this.totalSecsLeft % 60,
-                minutes     : Math.floor(this.totalSecsLeft / 60) % 60,
-                hours       : Math.floor(this.totalSecsLeft / 60 / 60) % 24,
-                days        : Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7,
-                totalDays   : Math.floor(this.totalSecsLeft / 60 / 60 / 24),
-                weeks       : Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7),
-                months      : Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30),
-                years       : Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 365)
+                seconds: this.totalSecsLeft % 60,
+                minutes: Math.floor(this.totalSecsLeft / 60) % 60,
+                hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
+                days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7,
+                totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24),
+                weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7),
+                months: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30),
+                years: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 365)
             };
-            // Dispatch an event
-            if(this.totalSecsLeft === 0) {
+
+            var upNum = this.upFinalDate.valueOf() - new Date().valueOf();
+            if (Math.ceil(upNum / 1e3) < 0) {
+                clearInterval(this.interval);
+                this.interval = null;
                 this.stop();
-                this.dispatchEvent('finish');
+                this.dispatchEvent("upfinish");
             } else {
-                this.dispatchEvent('update');
+                this.dispatchEvent("upUpdate");
+            }
+            this.totalSecsLeft += 1;
+        },
+        update: function() {
+            if (this.$el.closest("html").length === 0) {
+                this.remove();
+                return;
+            }
+            this.totalSecsLeft = this.finalDate.valueOf() - new Date().valueOf();
+            this.totalSecsLeft = Math.ceil(this.totalSecsLeft / 1e3);
+            this.totalSecsLeft = this.totalSecsLeft < 0 ? 0 : this.totalSecsLeft;
+            this.offset = {
+                seconds: this.totalSecsLeft % 60,
+                minutes: Math.floor(this.totalSecsLeft / 60) % 60,
+                hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
+                days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7,
+                totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24),
+                weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7),
+                months: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30),
+                years: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 365)
+            };
+            if (this.totalSecsLeft === 0) {
+                clearInterval(this.interval);
+                this.interval = null;
+                //倒计时结束 秒杀开始
+                this.upStart();
+                this.dispatchEvent("finish");
+            } else {
+                this.dispatchEvent("update");
             }
         },
         dispatchEvent: function(eventName) {
-            var event = $.Event(eventName + '.countdown');
-            event.finalDate     = this.finalDate;
-            event.offset        = $.extend({}, this.offset);
-            event.strftime      = strftime(this.offset);
+            var event = $.Event(eventName + ".countdown");
+            event.finalDate = this.finalDate;
+            event.offset = $.extend({}, this.offset);
+            event.strftime = strftime(this.offset);
             this.$el.trigger(event);
         }
     });
+
     // Register the jQuery selector actions
     $.fn.countdown = function() {
         var argumentsArray = Array.prototype.slice.call(arguments, 0);
@@ -226,7 +266,7 @@
                 }
             } else {
                 // ... if not we create an instance
-                new Countdown(this, argumentsArray[0], argumentsArray[1]);
+                new Countdown(this, argumentsArray[0], argumentsArray[1], argumentsArray[2]);
             }
         });
     };

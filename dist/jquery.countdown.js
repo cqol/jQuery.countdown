@@ -1,6 +1,6 @@
 /*!
  * The Final Countdown for jQuery v2.0.2 (http://hilios.github.io/jQuery.countdown/)
- * Copyright (c) 2013 Edson Hilios
+ * Copyright (c) 2014 Edson Hilios
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -41,8 +41,8 @@
             if (String(dateString).match(/^[0-9]*$/)) {
                 dateString = Number(dateString);
             }
-            if(String(dateString).match(/\-/)) {
-                dateString = String(dateString).replace(/\-/g, '/');
+            if (String(dateString).match(/\-/)) {
+                dateString = String(dateString).replace(/\-/g, "/");
             }
             return new Date(dateString);
         } else {
@@ -104,12 +104,13 @@
             return plural;
         }
     }
-    var Countdown = function(el, finalDate, callback) {
+    var Countdown = function(el, finalDate, upFinalDate, callback) {
         this.el = el;
         this.$el = $(el);
         this.interval = null;
         this.offset = {};
         this.setFinalDate(finalDate);
+        this.setUpFinalDate(upFinalDate);
         this.instanceNumber = instances.length;
         instances.push(this);
         this.$el.data("countdown-instance", this.instanceNumber);
@@ -117,6 +118,7 @@
             this.$el.on("update.countdown", callback);
             this.$el.on("stoped.countdown", callback);
             this.$el.on("finish.countdown", callback);
+            this.$el.on("upfinish.countdown", callback);
         }
         this.start();
     };
@@ -130,6 +132,17 @@
             this.interval = setInterval(function() {
                 self.update.call(self);
             }, PRECISION);
+        },
+        upStart: function() {
+            if (this.interval !== null) {
+                throw new Error("Countdown is already running!");
+            }
+            var self = this;
+            this.totalSecsLeft = 0;
+            this.upUpdate();
+            this.interval = setInterval(function() {
+                self.upUpdate.call(self);
+            }, 1e3);
         },
         stop: function() {
             clearInterval(this.interval);
@@ -145,10 +158,40 @@
         remove: function() {
             this.stop();
             delete instances[this.instanceNumber];
-            delete this.$el.data().countdownInstance;
         },
         setFinalDate: function(value) {
             this.finalDate = parseDateString(value);
+        },
+        setUpFinalDate: function(value) {
+            this.upFinalDate = parseDateString(value);
+        },
+        upUpdate: function() {
+            if (this.$el.closest("html").length === 0) {
+                this.remove();
+                return;
+            }
+            var startTime = new Date().valueOf() - this.finalDate.valueOf();
+            this.totalSecsLeft = Math.ceil(startTime / 1e3);
+            this.offset = {
+                seconds: this.totalSecsLeft % 60,
+                minutes: Math.floor(this.totalSecsLeft / 60) % 60,
+                hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
+                days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7,
+                totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24),
+                weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7),
+                months: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30),
+                years: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 365)
+            };
+            var upNum = this.upFinalDate.valueOf() - new Date().valueOf();
+            if (Math.ceil(upNum / 1e3) < 0) {
+                clearInterval(this.interval);
+                this.interval = null;
+                this.stop();
+                this.dispatchEvent("upfinish");
+            } else {
+                this.dispatchEvent("upUpdate");
+            }
+            this.totalSecsLeft += 1;
         },
         update: function() {
             if (this.$el.closest("html").length === 0) {
@@ -169,7 +212,9 @@
                 years: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 365)
             };
             if (this.totalSecsLeft === 0) {
-                this.stop();
+                clearInterval(this.interval);
+                this.interval = null;
+                this.upStart();
                 this.dispatchEvent("finish");
             } else {
                 this.dispatchEvent("update");
@@ -197,7 +242,7 @@
                     $.error("Method %s does not exist on jQuery.countdown".replace(/\%s/gi, method));
                 }
             } else {
-                new Countdown(this, argumentsArray[0], argumentsArray[1]);
+                new Countdown(this, argumentsArray[0], argumentsArray[1], argumentsArray[2]);
             }
         });
     };
