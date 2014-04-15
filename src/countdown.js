@@ -50,6 +50,7 @@
         'd': 'days',
         'D': 'totalDays',
         'H': 'hours',
+        'h': 'totalHours',
         'M': 'minutes',
         'S': 'seconds'
     };
@@ -186,6 +187,7 @@
                 seconds: this.totalSecsLeft % 60,
                 minutes: Math.floor(this.totalSecsLeft / 60) % 60,
                 hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
+                totalHours: Math.floor(this.totalSecsLeft / 60 / 60),
                 days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7,
                 totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24),
                 weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7),
@@ -216,6 +218,7 @@
                 seconds: this.totalSecsLeft % 60,
                 minutes: Math.floor(this.totalSecsLeft / 60) % 60,
                 hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
+                totalHours: Math.floor(this.totalSecsLeft / 60 / 60),
                 days: Math.floor(this.totalSecsLeft / 60 / 60 / 24) % 7,
                 totalDays: Math.floor(this.totalSecsLeft / 60 / 60 / 24),
                 weeks: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 7),
