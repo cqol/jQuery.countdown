@@ -171,8 +171,9 @@
                 this.remove();
                 return;
             }
-            var startTime = new Date().valueOf() - this.finalDate.valueOf();
-            this.totalSecsLeft = Math.ceil(startTime / 1e3);
+            this.totalSecsLeft = this.upFinalDate.valueOf() - new Date().valueOf();
+            this.totalSecsLeft = Math.ceil(this.totalSecsLeft / 1e3);
+            this.totalSecsLeft = this.totalSecsLeft < 0 ? 0 : this.totalSecsLeft;
             this.offset = {
                 seconds: this.totalSecsLeft % 60,
                 minutes: Math.floor(this.totalSecsLeft / 60) % 60,
@@ -184,8 +185,7 @@
                 months: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 30),
                 years: Math.floor(this.totalSecsLeft / 60 / 60 / 24 / 365)
             };
-            var upNum = this.upFinalDate.valueOf() - new Date().valueOf();
-            if (Math.ceil(upNum / 1e3) < 0) {
+            if (this.totalSecsLeft === 0) {
                 clearInterval(this.interval);
                 this.interval = null;
                 this.stop();
@@ -193,7 +193,6 @@
             } else {
                 this.dispatchEvent("upUpdate");
             }
-            this.totalSecsLeft += 1;
         },
         update: function() {
             if (this.$el.closest("html").length === 0) {
