@@ -116,6 +116,7 @@
         this.el             = el;
         this.$el            = $(el);
         this.interval       = null;
+        this.upTin          = null;
         this.offset         = {};
         // Set the final date
         this.setFinalDate(finalDate);
@@ -145,13 +146,13 @@
             }, PRECISION);
         },
         upStart: function() {
-            if (this.interval !== null) {
+            if (this.upTin !== null) {
                 throw new Error("Countdown is already running!");
             }
             var self = this;
             this.totalSecsLeft = 0;
             this.upUpdate();
-            this.interval = setInterval(function() {
+            this.upTin = setInterval(function() {
                 self.upUpdate.call(self);
             }, 1000);
         },
@@ -197,8 +198,8 @@
             };
             //var upNum =  - new Date().valueOf();
             if (this.totalSecsLeft === 0) {
-                clearInterval(this.interval);
-                this.interval = null;
+                clearInterval(this.upTin);
+                this.upTin = null;
                 this.stop();
                 this.dispatchEvent("upfinish");
             } else {
