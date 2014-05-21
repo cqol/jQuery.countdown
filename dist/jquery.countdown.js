@@ -217,6 +217,7 @@
             if (this.totalSecsLeft === 0) {
                 clearInterval(this.interval);
                 this.interval = null;
+                this.upTin = null;
                 this.upStart();
                 this.dispatchEvent("finish");
             } else {

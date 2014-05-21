@@ -228,6 +228,7 @@
             if (this.totalSecsLeft === 0) {
                 clearInterval(this.interval);
                 this.interval = null;
+                this.upTin = null;
                 //倒计时结束 秒杀开始
                 this.upStart();
                 this.dispatchEvent("finish");
