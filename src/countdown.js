@@ -7,7 +7,7 @@
     }
 })(function($){
     'use strict';
-    
+
     var PRECISION   = 100; // 0.1 seconds, used to update the DOM
     var instances   = [],
         matchers    = [];
@@ -21,13 +21,13 @@
     matchers = new RegExp(matchers.join("|"));
     // Parse a Date formatted has String to a native object
     function parseDateString(dateString) {
-        // Pass through when a native object is sent 
+        // Pass through when a native object is sent
         if(dateString instanceof Date) {
             return dateString;
         }
         // Caste string to date object
         if(String(dateString).match(matchers)) {
-            // If looks like a milisecond value cast to number before 
+            // If looks like a milisecond value cast to number before
             // final casting (Thanks to @msigley)
             if(String(dateString).match(/^[0-9]*$/)) {
                 dateString = Number(dateString);
@@ -52,9 +52,10 @@
         'H': 'hours',
         'h': 'totalHours',
         'M': 'minutes',
-        'S': 'seconds'
+        'S': 'seconds',
+        'c': 'millisecond'
     };
-    // Time string formatter 
+    // Time string formatter
     function strftime(offsetObject) {
         return function(format) {
             var directives = format.match(/%(-|!)?[A-Z]{1}(:[^;]+;)?/gi);
@@ -183,9 +184,16 @@
                 return;
             }
             this.totalSecsLeft = this.upFinalDate.valueOf() - new Date().valueOf();
+            this.millisecond = Math.ceil(this.totalSecsLeft % 1e3);
+            if (this.millisecond < 100) {
+                this.millisecond = '0' + this.millisecond.toString();
+            } else {
+                this.millisecond = this.millisecond.toString();
+            }
             this.totalSecsLeft = Math.ceil(this.totalSecsLeft / 1e3);
             this.totalSecsLeft = this.totalSecsLeft < 0 ? 0 : this.totalSecsLeft;
             this.offset = {
+                millisecond:this.millisecond[0],
                 seconds: this.totalSecsLeft % 60,
                 minutes: Math.floor(this.totalSecsLeft / 60) % 60,
                 hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
@@ -258,11 +266,11 @@
                     method = argumentsArray[0];
                 // If method exists in the prototype execute
                 if(Countdown.prototype.hasOwnProperty(method)) {
-                    instance[method].apply(instance, 
+                    instance[method].apply(instance,
                         argumentsArray.slice(1));
                 // If method look like a date try to set a new final date
                 } else if(String(method).match(/^[$A-Z_][0-9A-Z_$]*$/i) === null) {
-                    instance.setFinalDate.call(instance, 
+                    instance.setFinalDate.call(instance,
                         method);
                 } else {
                     $.error('Method %s does not exist on jQuery.countdown'.

@@ -58,7 +58,8 @@
         H: "hours",
         h: "totalHours",
         M: "minutes",
-        S: "seconds"
+        S: "seconds",
+        c: "millisecond"
     };
     function strftime(offsetObject) {
         return function(format) {
@@ -173,9 +174,16 @@
                 return;
             }
             this.totalSecsLeft = this.upFinalDate.valueOf() - new Date().valueOf();
+            this.millisecond = Math.ceil(this.totalSecsLeft % 1e3);
+            if (this.millisecond < 100) {
+                this.millisecond = "0" + this.millisecond.toString();
+            } else {
+                this.millisecond = this.millisecond.toString();
+            }
             this.totalSecsLeft = Math.ceil(this.totalSecsLeft / 1e3);
             this.totalSecsLeft = this.totalSecsLeft < 0 ? 0 : this.totalSecsLeft;
             this.offset = {
+                millisecond: this.millisecond[0],
                 seconds: this.totalSecsLeft % 60,
                 minutes: Math.floor(this.totalSecsLeft / 60) % 60,
                 hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
