@@ -80,11 +80,11 @@
                             value = pluralize(plural, value);
                         }
                         // Add zero-padding
-                        if(modifier === '') {
+                        /*if(modifier === '') {
                             if(value < 10) {
                                 value = '0' + value.toString();
                             }
-                        }
+                        }*/
                         // Replace the directive
                         format = format.replace(regexp, value.toString());
                     }

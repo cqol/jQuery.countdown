@@ -76,11 +76,6 @@
                         if (modifier === "!") {
                             value = pluralize(plural, value);
                         }
-                        if (modifier === "") {
-                            if (value < 10) {
-                                value = "0" + value.toString();
-                            }
-                        }
                         format = format.replace(regexp, value.toString());
                     }
                 }
