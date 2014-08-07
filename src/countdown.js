@@ -155,7 +155,7 @@
             this.upUpdate();
             this.upTin = setInterval(function() {
                 self.upUpdate.call(self);
-            }, 1000);
+            }, PRECISION);
         },
         stop: function() {
             clearInterval(this.interval);
