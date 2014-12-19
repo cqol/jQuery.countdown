@@ -80,11 +80,11 @@
                             value = pluralize(plural, value);
                         }
                         // Add zero-padding
-                        /*if(modifier === '') {
+                        if(modifier === '') {
                             if(value < 10) {
                                 value = '0' + value.toString();
                             }
-                        }*/
+                        }
                         // Replace the directive
                         format = format.replace(regexp, value.toString());
                     }
@@ -184,16 +184,12 @@
                 return;
             }
             this.totalSecsLeft = this.upFinalDate.valueOf() - new Date().valueOf();
-            this.millisecond = Math.ceil(this.totalSecsLeft % 1e3);
-            if (this.millisecond < 100) {
-                this.millisecond = '0' + this.millisecond.toString();
-            } else {
-                this.millisecond = this.millisecond.toString();
-            }
+            this.millisecond = parseInt(Math.ceil(this.totalSecsLeft % 1e3) / 100, 10);
             this.totalSecsLeft = Math.ceil(this.totalSecsLeft / 1e3);
             this.totalSecsLeft = this.totalSecsLeft < 0 ? 0 : this.totalSecsLeft;
+
             this.offset = {
-                millisecond:this.millisecond[0],
+                millisecond: this.millisecond,
                 seconds: this.totalSecsLeft % 60,
                 minutes: Math.floor(this.totalSecsLeft / 60) % 60,
                 hours: Math.floor(this.totalSecsLeft / 60 / 60) % 24,
